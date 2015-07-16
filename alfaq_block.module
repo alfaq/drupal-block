@@ -1,0 +1,82 @@
+<?php
+
+/**
+ * @file
+ * myblock.module
+ */
+//описание функции показывает этот блок в спике всех блоков
+function alfaq_block_block_info() {
+    // This example comes from node.module.
+    $blocks['alfaqblock'] = array(
+        'info' => t('Alfaq block'),
+    );
+
+    return $blocks;
+}
+//функция отображения блока
+function alfaq_block_block_view($delta = '') {
+    $block = array();
+
+    switch ($delta) {
+        case 'alfaqblock':
+            $block['subject'] = t('Alfaq block subject');
+            $block['content'] = variable_get('gmap_location_block_macro', 'test string');
+            break;
+    }
+    return $block;
+}
+
+//функция настроек блока
+function alfaq_block_block_configure($delta = '') {
+    // This example comes from node.module.
+    $form = array();
+    if ($delta == 'alfaqblock') {
+        $form['node_recent_block_count'] = array(
+            '#type' => 'select',
+            '#title' => t('Number of recent content items to display'),
+            '#default_value' => variable_get('node_recent_block_count', 10),
+            '#options' => drupal_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30)),
+        );
+
+        $form['notifications_ui_block_display'] = array(
+            '#type' => 'radios',
+            '#title' => t('Subscription display'),
+            '#default_value' => variable_get('notifications_ui_block_display', 'links'),
+            '#options' => array(
+                'links' => t('Links'),
+                'checkboxes' => t('Checkboxes'),
+            )
+        );
+
+        $form['gmap_location_block_macro'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Map Macro'),
+            '#size' => 60,
+            '#maxlength' => 500,
+            '#description' => t('A macro to be used as a base map for the location block.  This map will be recentered on the location, so the center is not that important. <p>Alternate base map macros can be entered for a specific node type below.'),
+            '#default_value' => variable_get('gmap_location_block_macro', 'test string'),
+        );
+    }
+    return $form;
+}
+
+function alfaq_block_block_save($delta = '', $edit = array()) {
+    // This example comes from node.module.
+    if ($delta == 'alfaqblock') {
+        variable_set('node_recent_block_count', $edit['node_recent_block_count']);
+        variable_set('notifications_ui_block_display', $edit['notifications_ui_block_display']);
+        variable_set('gmap_location_block_macro', $edit['gmap_location_block_macro']);
+    }
+}
+
+function alfaq_block_block_view_alter(&$data, $block) {
+    // Remove the contextual links on all blocks that provide them.
+    if (is_array($data['content']) && isset($data['content']['#contextual_links'])) {
+        unset($data['content']['#contextual_links']);
+    }
+    // Add a theme wrapper function defined by the current module to all blocks
+    // provided by the "somemodule" module.
+    if (is_array($data['content']) && $block->module == 'somemodule') {
+        $data['content']['#theme_wrappers'][] = 'mymodule_special_block';
+    }
+}
